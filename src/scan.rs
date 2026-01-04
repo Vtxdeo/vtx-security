@@ -31,16 +31,20 @@ pub enum ScanError {
 }
 
 pub fn scan_vtx_file(path: &Path, options: &ScanOptions) -> Result<Report, ScanError> {
-    let vtx_bytes =
-        std::fs::read(path).map_err(|e| ScanError::ReadFile(format!("{}: {}", path.display(), e)))?;
+    let vtx_bytes = std::fs::read(path)
+        .map_err(|e| ScanError::ReadFile(format!("{}: {}", path.display(), e)))?;
     let vtx_sha256 = sha256_hex(&vtx_bytes);
 
-    let (vtx_version, vtx_meta, component_bytes) = vtx_format::decode_with_metadata(&vtx_bytes)
+    let decoded = vtx_format::decode_with_metadata(&vtx_bytes)
         .map_err(|e| ScanError::InvalidVtx(e.to_string()))?;
+    let vtx_version = decoded.version;
+    let vtx_meta = decoded.metadata;
+    let component_bytes = decoded.component;
     let component_sha256 = sha256_hex(component_bytes);
 
     let mut findings = Vec::new();
-    let (author, sdk_version, signature, meta_findings) = extract_metadata(vtx_meta, component_bytes)?;
+    let (author, sdk_version, signature, meta_findings) =
+        extract_metadata(vtx_meta, component_bytes)?;
     findings.extend(meta_findings);
     if author.is_none() {
         findings.push(Finding {
@@ -199,7 +203,9 @@ fn extract_metadata(
 
     let mut findings = Vec::new();
     if let Some(meta) = vtx_meta {
-        if let Err(e) = parse_vtx_container_metadata(meta, &mut author, &mut sdk_version, &mut signature) {
+        if let Err(e) =
+            parse_vtx_container_metadata(meta, &mut author, &mut sdk_version, &mut signature)
+        {
             findings.push(Finding {
                 id: "meta.vtx_container_invalid".to_string(),
                 severity: Severity::Medium,
@@ -225,7 +231,12 @@ fn extract_metadata(
                 }
                 "vtx.meta" | "vtx-metadata" => {
                     if author.is_none() || sdk_version.is_none() || !signature.present {
-                        let _ = parse_vtx_meta_json(c.data(), &mut author, &mut sdk_version, &mut signature);
+                        let _ = parse_vtx_meta_json(
+                            c.data(),
+                            &mut author,
+                            &mut sdk_version,
+                            &mut signature,
+                        );
                     }
                 }
                 "vtx.author" => {
@@ -281,9 +292,18 @@ fn parse_vtx_container_metadata(
         if let Some(sig) = value.get("signature") {
             if let Some(obj) = sig.as_object() {
                 signature.present = true;
-                signature.scheme = obj.get("scheme").and_then(|v| v.as_str()).map(|s| s.to_string());
-                signature.signer = obj.get("signer").and_then(|v| v.as_str()).map(|s| s.to_string());
-                signature.value = obj.get("value").and_then(|v| v.as_str()).map(|s| s.to_string());
+                signature.scheme = obj
+                    .get("scheme")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                signature.signer = obj
+                    .get("signer")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                signature.value = obj
+                    .get("value")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
                 signature.verified = obj.get("verified").and_then(|v| v.as_bool());
             }
         }
@@ -353,9 +373,18 @@ fn parse_vtx_meta_json(
         if let Some(sig) = value.get("signature") {
             if let Some(obj) = sig.as_object() {
                 signature.present = true;
-                signature.scheme = obj.get("scheme").and_then(|v| v.as_str()).map(|s| s.to_string());
-                signature.signer = obj.get("signer").and_then(|v| v.as_str()).map(|s| s.to_string());
-                signature.value = obj.get("value").and_then(|v| v.as_str()).map(|s| s.to_string());
+                signature.scheme = obj
+                    .get("scheme")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                signature.signer = obj
+                    .get("signer")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+                signature.value = obj
+                    .get("value")
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
                 signature.verified = obj.get("verified").and_then(|v| v.as_bool());
             }
         }
@@ -370,9 +399,18 @@ fn parse_signature_section(bytes: &[u8]) -> SignatureInfo {
             if let Some(obj) = value.as_object() {
                 return SignatureInfo {
                     present: true,
-                    scheme: obj.get("scheme").and_then(|v| v.as_str()).map(|s| s.to_string()),
-                    signer: obj.get("signer").and_then(|v| v.as_str()).map(|s| s.to_string()),
-                    value: obj.get("value").and_then(|v| v.as_str()).map(|s| s.to_string()),
+                    scheme: obj
+                        .get("scheme")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string()),
+                    signer: obj
+                        .get("signer")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string()),
+                    value: obj
+                        .get("value")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string()),
                     verified: obj.get("verified").and_then(|v| v.as_bool()),
                 };
             }
@@ -390,7 +428,11 @@ fn parse_signature_section(bytes: &[u8]) -> SignatureInfo {
 
 fn parse_utf8_trimmed(bytes: &[u8]) -> Option<String> {
     let s = std::str::from_utf8(bytes).ok()?.trim().to_string();
-    if s.is_empty() { None } else { Some(s) }
+    if s.is_empty() {
+        None
+    } else {
+        Some(s)
+    }
 }
 
 fn sha256_hex(bytes: &[u8]) -> String {
