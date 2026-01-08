@@ -91,6 +91,7 @@ fn scan_component_contract(
 ) -> Result<Vec<Finding>, ScanError> {
     let mut found_handle = false;
     let mut found_manifest = false;
+    let mut found_capabilities = false;
     let mut exports = Vec::<String>::new();
 
     for payload in WasmParser::new(0).parse_all(component_bytes) {
@@ -108,6 +109,9 @@ fn scan_component_contract(
                     "get-manifest"
                     | "vtx:api/plugin/get-manifest"
                     | "vtx:api/plugin#get-manifest" => found_manifest = true,
+                    "get-capabilities"
+                    | "vtx:api/plugin/get-capabilities"
+                    | "vtx:api/plugin#get-capabilities" => found_capabilities = true,
                     _ => {}
                 }
             }
@@ -128,6 +132,14 @@ fn scan_component_contract(
             id: "contract.missing_get_manifest".to_string(),
             severity: Severity::High,
             message: "Missing required export: get-manifest".to_string(),
+            evidence: Some(serde_json::json!({ "exports": exports })),
+        });
+    }
+    if options.require_contract_exports && !found_capabilities {
+        findings.push(Finding {
+            id: "contract.missing_get_capabilities".to_string(),
+            severity: Severity::High,
+            message: "Missing required export: get-capabilities".to_string(),
             evidence: Some(serde_json::json!({ "exports": exports })),
         });
     }
