@@ -1,8 +1,8 @@
-use crate::report::SignatureInfo;
 use super::super::ScanError;
 use super::container::parse_vtx_meta_json;
 use super::signature::parse_signature_section;
 use super::utils::{parse_sdk_version_from_producers, parse_utf8_trimmed};
+use crate::report::SignatureInfo;
 use wasmparser::{Parser as WasmParser, Payload};
 
 pub(super) fn scan_custom_sections(
@@ -27,12 +27,7 @@ pub(super) fn scan_custom_sections(
                 }
                 "vtx.meta" | "vtx-metadata" => {
                     if author.is_none() || sdk_version.is_none() || !signature.present {
-                        let _ = parse_vtx_meta_json(
-                            c.data(),
-                            author,
-                            sdk_version,
-                            signature,
-                        );
+                        let _ = parse_vtx_meta_json(c.data(), author, sdk_version, signature);
                     }
                 }
                 "vtx.author" => {

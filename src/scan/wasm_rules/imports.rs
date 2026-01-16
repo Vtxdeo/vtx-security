@@ -65,7 +65,10 @@ pub(super) fn classify_import(
     }
 
     if module_lower.starts_with("wasi_snapshot_preview1")
-        && matches!(name_lower.as_str(), "proc_exit" | "proc_raise" | "thread_spawn")
+        && matches!(
+            name_lower.as_str(),
+            "proc_exit" | "proc_raise" | "thread_spawn"
+        )
     {
         push_import(process, module, name);
         return;

@@ -1,7 +1,7 @@
+use super::super::{ScanError, ScanOptions};
 use super::analyze::process_module_payload;
 use super::rules::finalize_module;
 use super::state::ModuleRiskState;
-use super::super::{ScanError, ScanOptions};
 use crate::report::Finding;
 use wasmparser::{Encoding, Parser as WasmParser, Payload};
 
@@ -25,7 +25,13 @@ pub(crate) fn scan_component_wasm_risks(
                 }
             }
             Payload::ModuleSection { parser, .. } => {
-                scan_module(parser, component_bytes, module_index, options, &mut findings)?;
+                scan_module(
+                    parser,
+                    component_bytes,
+                    module_index,
+                    options,
+                    &mut findings,
+                )?;
                 module_index = module_index.saturating_add(1);
             }
             Payload::ComponentSection { parser, .. } => {

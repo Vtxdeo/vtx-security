@@ -3,8 +3,8 @@ mod custom_sections;
 mod signature;
 mod utils;
 
-use crate::report::{Finding, Severity, SignatureInfo};
 use super::ScanError;
+use crate::report::{Finding, Severity, SignatureInfo};
 
 use container::parse_vtx_container_metadata;
 use custom_sections::scan_custom_sections;
@@ -37,7 +37,12 @@ pub(super) fn extract_metadata(
         }
     }
 
-    scan_custom_sections(component_bytes, &mut author, &mut sdk_version, &mut signature)?;
+    scan_custom_sections(
+        component_bytes,
+        &mut author,
+        &mut sdk_version,
+        &mut signature,
+    )?;
 
     Ok((author, sdk_version, signature, findings))
 }

@@ -1,5 +1,5 @@
-use crate::report::{Finding, Severity};
 use super::{ScanError, ScanOptions};
+use crate::report::{Finding, Severity};
 use std::collections::BTreeMap;
 use wasmparser::{Parser as WasmParser, Payload};
 

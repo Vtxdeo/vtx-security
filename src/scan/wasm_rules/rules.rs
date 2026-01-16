@@ -1,5 +1,5 @@
-use super::state::ModuleRiskState;
 use super::super::ScanOptions;
+use super::state::ModuleRiskState;
 use crate::report::{Finding, Severity};
 use std::collections::BTreeMap;
 
@@ -168,8 +168,7 @@ pub(super) fn finalize_module(
         findings.push(Finding {
             id: "wasm.op.memory_grow".to_string(),
             severity: Severity::Medium,
-            message: "Uses memory.grow; runtime memory expansion may amplify DoS risk"
-                .to_string(),
+            message: "Uses memory.grow; runtime memory expansion may amplify DoS risk".to_string(),
             evidence: Some(serde_json::json!({ "module_index": module_index })),
         });
     }

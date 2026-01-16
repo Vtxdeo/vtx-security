@@ -1,5 +1,5 @@
-use crate::report::{Finding, Severity};
 use super::{ScanError, ScanOptions};
+use crate::report::{Finding, Severity};
 use wasmparser::{Parser as WasmParser, Payload};
 
 pub(super) fn scan_component_contract(

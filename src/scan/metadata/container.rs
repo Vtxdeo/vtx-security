@@ -1,6 +1,6 @@
-use crate::report::SignatureInfo;
 use super::super::ScanError;
 use super::signature::parse_signature_object;
+use crate::report::SignatureInfo;
 
 pub(super) fn parse_vtx_container_metadata(
     bytes: &[u8],

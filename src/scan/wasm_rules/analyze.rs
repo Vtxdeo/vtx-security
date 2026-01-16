@@ -1,6 +1,6 @@
+use super::super::ScanError;
 use super::imports::classify_import;
 use super::state::{MemoryRecord, ModuleRiskState, TableRecord};
-use super::super::ScanError;
 use wasmparser::{Operator, Payload, TypeRef};
 
 pub(super) fn process_module_payload(
@@ -71,9 +71,7 @@ pub(super) fn process_module_payload(
             for data in reader {
                 let data = data.map_err(|e| ScanError::WasmParse(e.to_string()))?;
                 state.data_segments = state.data_segments.saturating_add(1);
-                state.data_bytes = state
-                    .data_bytes
-                    .saturating_add(data.data.len() as u64);
+                state.data_bytes = state.data_bytes.saturating_add(data.data.len() as u64);
             }
         }
         Payload::CodeSectionEntry(body) => {
