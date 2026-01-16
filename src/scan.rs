@@ -1,6 +1,7 @@
 mod contract;
 mod imports;
 mod metadata;
+mod wasm_rules;
 
 use crate::report::{Finding, Report, Severity};
 use sha2::{Digest, Sha256};
@@ -10,11 +11,18 @@ use thiserror::Error;
 use contract::scan_component_contract;
 use imports::scan_component_imports;
 use metadata::extract_metadata;
+use wasm_rules::scan_component_wasm_risks;
 
 #[derive(Debug, Clone)]
 pub struct ScanOptions {
     pub require_contract_exports: bool,
     pub allow_unknown_imports: bool,
+    pub max_initial_memory_pages: u64,
+    pub max_memory_pages: u64,
+    pub max_table_elements: u32,
+    pub max_function_count: u32,
+    pub max_data_segments: u32,
+    pub max_data_bytes: u64,
 }
 
 impl Default for ScanOptions {
@@ -22,6 +30,12 @@ impl Default for ScanOptions {
         Self {
             require_contract_exports: true,
             allow_unknown_imports: true,
+            max_initial_memory_pages: 512,
+            max_memory_pages: 4096,
+            max_table_elements: 100_000,
+            max_function_count: 10_000,
+            max_data_segments: 1_000,
+            max_data_bytes: 64 * 1024 * 1024,
         }
     }
 }
@@ -78,6 +92,7 @@ pub fn scan_vtx_file(path: &Path, options: &ScanOptions) -> Result<Report, ScanE
     }
     findings.extend(scan_component_contract(component_bytes, options)?);
     findings.extend(scan_component_imports(component_bytes, options)?);
+    findings.extend(scan_component_wasm_risks(component_bytes, options)?);
 
     Ok(Report {
         target_path: path.display().to_string(),
