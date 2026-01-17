@@ -9,10 +9,12 @@ use crate::report::{Finding, Severity, SignatureInfo};
 use container::parse_vtx_container_metadata;
 use custom_sections::scan_custom_sections;
 
+type MetadataResult = (Option<String>, Option<String>, SignatureInfo, Vec<Finding>);
+
 pub(super) fn extract_metadata(
     vtx_meta: Option<&[u8]>,
     component_bytes: &[u8],
-) -> Result<(Option<String>, Option<String>, SignatureInfo, Vec<Finding>), ScanError> {
+) -> Result<MetadataResult, ScanError> {
     let mut author: Option<String> = None;
     let mut sdk_version: Option<String> = None;
     let mut signature = SignatureInfo {

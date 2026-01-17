@@ -1,15 +1,7 @@
+use super::state::ModuleRiskState;
 use std::collections::BTreeMap;
 
-pub(super) fn classify_import(
-    module: &str,
-    name: &str,
-    fs: &mut BTreeMap<String, Vec<String>>,
-    net: &mut BTreeMap<String, Vec<String>>,
-    process: &mut BTreeMap<String, Vec<String>>,
-    env: &mut BTreeMap<String, Vec<String>>,
-    time: &mut BTreeMap<String, Vec<String>>,
-    random: &mut BTreeMap<String, Vec<String>>,
-) {
+pub(super) fn classify_import(module: &str, name: &str, state: &mut ModuleRiskState) {
     let module_lower = module.to_ascii_lowercase();
     let name_lower = name.to_ascii_lowercase();
 
@@ -39,7 +31,7 @@ pub(super) fn classify_import(
                     | "fd_prestat_dir_name"
             )
     {
-        push_import(fs, module, name);
+        push_import(&mut state.imports_fs, module, name);
         return;
     }
 
@@ -60,7 +52,7 @@ pub(super) fn classify_import(
                     | "sock_getlocaladdr"
             )
     {
-        push_import(net, module, name);
+        push_import(&mut state.imports_net, module, name);
         return;
     }
 
@@ -70,7 +62,7 @@ pub(super) fn classify_import(
             "proc_exit" | "proc_raise" | "thread_spawn"
         )
     {
-        push_import(process, module, name);
+        push_import(&mut state.imports_process, module, name);
         return;
     }
 
@@ -80,21 +72,21 @@ pub(super) fn classify_import(
             "environ_get" | "environ_sizes_get" | "args_get" | "args_sizes_get"
         )
     {
-        push_import(env, module, name);
+        push_import(&mut state.imports_env, module, name);
         return;
     }
 
     if module_lower.starts_with("wasi_snapshot_preview1")
         && matches!(name_lower.as_str(), "clock_time_get" | "clock_res_get")
     {
-        push_import(time, module, name);
+        push_import(&mut state.imports_time, module, name);
         return;
     }
 
     if module_lower.starts_with("wasi_snapshot_preview1")
         && matches!(name_lower.as_str(), "random_get")
     {
-        push_import(random, module, name);
+        push_import(&mut state.imports_random, module, name);
     }
 }
 

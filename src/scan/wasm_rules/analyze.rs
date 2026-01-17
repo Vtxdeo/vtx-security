@@ -11,16 +11,7 @@ pub(super) fn process_module_payload(
         Payload::ImportSection(reader) => {
             for import in reader {
                 let import = import.map_err(|e| ScanError::WasmParse(e.to_string()))?;
-                classify_import(
-                    import.module,
-                    import.name,
-                    &mut state.imports_fs,
-                    &mut state.imports_net,
-                    &mut state.imports_process,
-                    &mut state.imports_env,
-                    &mut state.imports_time,
-                    &mut state.imports_random,
-                );
+                classify_import(import.module, import.name, state);
 
                 match import.ty {
                     TypeRef::Func(_) => {

@@ -19,7 +19,7 @@ pub(crate) fn scan_component_wasm_risks(
             Payload::Version { encoding, .. } => {
                 if matches!(encoding, Encoding::Module) {
                     root_module = Some(ModuleRiskState {
-                        module_index: module_index,
+                        module_index,
                         ..Default::default()
                     });
                 }
